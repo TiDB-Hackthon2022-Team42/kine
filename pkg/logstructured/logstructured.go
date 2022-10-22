@@ -243,7 +243,7 @@ func (l *LogStructured) Set(ctx context.Context, key string, value []byte, lease
 		updateEvent = &server.Event{
 			KV: &server.KeyValue{
 				Key:            key,
-				CreateRevision: event.KV.CreateRevision,
+				CreateRevision: event.Rev,
 				Value:          value,
 				Lease:          lease,
 			},

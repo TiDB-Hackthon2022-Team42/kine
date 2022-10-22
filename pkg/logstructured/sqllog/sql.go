@@ -544,6 +544,7 @@ func scan(rows *sql.Rows, rev *int64, compact *int64, event *server.Event) error
 	if err != nil {
 		return err
 	}
+	event.Rev = *rev
 
 	if event.Create {
 		event.KV.CreateRevision = event.KV.ModRevision

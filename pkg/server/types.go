@@ -77,6 +77,7 @@ func (kv *KeyValue) ToEtcdKv() *mvccpb.KeyValue {
 }
 
 type Event struct {
+	Rev    int64
 	Delete bool
 	Create bool
 	KV     *KeyValue
