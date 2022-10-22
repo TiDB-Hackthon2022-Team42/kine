@@ -229,6 +229,7 @@ func (l *LogStructured) Set(ctx context.Context, key string, value []byte, lease
 	var updateEvent *server.Event
 	if event == nil { // 新建
 		updateEvent = &server.Event{
+			Create: true,
 			KV: &server.KeyValue{
 				Key:   key,
 				Value: value,
