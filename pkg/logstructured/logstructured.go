@@ -219,7 +219,7 @@ func (l *LogStructured) Set(ctx context.Context, key string, value []byte, lease
 		if kvRet != nil {
 			kvRev = kvRet.ModRevision
 		}
-		logrus.Tracef("UPDATE %s, value=%d, lease=%v => rev=%d, kvrev=%d, updated=%v, err=%v", key, len(value), lease, revRet, kvRev, updateRet, errRet)
+		logrus.Tracef("UPDATE %s, value=%d, lease=%v => rev=%d, kvrev=%d, err=%v", key, len(value), lease, revRet, kvRev, errRet)
 	}()
 
 	rev, event, err := l.get(ctx, key, "", 1, 0, false)
