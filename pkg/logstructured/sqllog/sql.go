@@ -69,7 +69,8 @@ func (s *SQLLog) compactStart(ctx context.Context) error {
 		return nil
 	}
 
-	t, err := s.d.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	// tidb 不支持序列化
+	t, err := s.d.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSnapshot})
 	if err != nil {
 		return err
 	}
@@ -178,7 +179,8 @@ func (s *SQLLog) compact(compactRev int64, targetCompactRev int64) (int64, int64
 	ctx, cancel := context.WithTimeout(s.ctx, compactTimeout)
 	defer cancel()
 
-	t, err := s.d.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	// 序列化隔离级别不支持
+	t, err := s.d.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSnapshot})
 	if err != nil {
 		return compactRev, targetCompactRev, errors.Wrap(err, "failed to begin transaction")
 	}

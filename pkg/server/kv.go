@@ -94,10 +94,12 @@ func toKV(kv *KeyValue) *mvccpb.KeyValue {
 }
 
 func (k *KVServerBridge) Put(ctx context.Context, r *etcdserverpb.PutRequest) (*etcdserverpb.PutResponse, error) {
+	logrus.Infof("put is not supported")
 	return nil, fmt.Errorf("put is not supported")
 }
 
 func (k *KVServerBridge) DeleteRange(ctx context.Context, r *etcdserverpb.DeleteRangeRequest) (*etcdserverpb.DeleteRangeResponse, error) {
+	logrus.Infof("DeleteRange is not supported")
 	return nil, fmt.Errorf("delete is not supported")
 }
 
