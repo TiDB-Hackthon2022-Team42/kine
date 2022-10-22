@@ -2,6 +2,7 @@ package logstructured
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"sync"
 	"time"
 
@@ -208,6 +209,60 @@ func (l *LogStructured) Count(ctx context.Context, prefix string) (revRet int64,
 		return rev, int64(len(rows)), err
 	}
 	return rev, count, nil
+}
+
+func (l *LogStructured) Set(ctx context.Context, key string, value []byte, lease int64) (revRet int64,
+	kvRet *server.KeyValue, errRet error) {
+	defer func() {
+		l.adjustRevision(ctx, &revRet)
+		kvRev := int64(0)
+		if kvRet != nil {
+			kvRev = kvRet.ModRevision
+		}
+		logrus.Tracef("UPDATE %s, value=%d, lease=%v => rev=%d, kvrev=%d, updated=%v, err=%v", key, len(value), lease, revRet, kvRev, updateRet, errRet)
+	}()
+
+	rev, event, err := l.get(ctx, key, "", 1, 0, false)
+	if err != nil {
+		return 0, nil, errors.Wrap(err, "get prev key fail")
+	}
+	var updateEvent *server.Event
+	if event == nil { // 新建
+		updateEvent = &server.Event{
+			KV: &server.KeyValue{
+				Key:   key,
+				Value: value,
+				Lease: lease,
+			},
+			PrevKV: &server.KeyValue{
+				ModRevision: rev,
+			},
+		}
+	} else {
+		updateEvent = &server.Event{
+			KV: &server.KeyValue{
+				Key:            key,
+				CreateRevision: event.KV.CreateRevision,
+				Value:          value,
+				Lease:          lease,
+			},
+			PrevKV: event.KV,
+		}
+	}
+
+	logrus.Tracef("event before set, %+v", event)
+
+	rev, err = l.log.Append(ctx, updateEvent)
+	if err != nil {
+		rev, event, err := l.get(ctx, key, "", 1, 0, false)
+		if event == nil {
+			return rev, nil, err
+		}
+		return rev, event.KV, err
+	}
+
+	updateEvent.KV.ModRevision = rev
+	return rev, updateEvent.KV, nil
 }
 
 func (l *LogStructured) Update(ctx context.Context, key string, value []byte, revision, lease int64) (revRet int64, kvRet *server.KeyValue, updateRet bool, errRet error) {

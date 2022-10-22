@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
-
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/api/v3/etcdserverpb"
 	"go.etcd.io/etcd/api/v3/mvccpb"
@@ -94,8 +94,16 @@ func toKV(kv *KeyValue) *mvccpb.KeyValue {
 }
 
 func (k *KVServerBridge) Put(ctx context.Context, r *etcdserverpb.PutRequest) (*etcdserverpb.PutResponse, error) {
-	logrus.Infof("put is not supported")
-	return nil, fmt.Errorf("put is not supported")
+	revId, preKv, err := k.limited.backend.Set(ctx, string(r.Key), r.Value, r.Lease)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	rsp := &etcdserverpb.PutResponse{
+		Header: txnHeader(revId),
+		PrevKv: preKv.ToEtcdKv(),
+	}
+	return rsp, nil
 }
 
 func (k *KVServerBridge) DeleteRange(ctx context.Context, r *etcdserverpb.DeleteRangeRequest) (*etcdserverpb.DeleteRangeResponse, error) {

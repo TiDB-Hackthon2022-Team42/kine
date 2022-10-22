@@ -70,7 +70,7 @@ func (s *SQLLog) compactStart(ctx context.Context) error {
 	}
 
 	// tidb 不支持序列化
-	t, err := s.d.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSnapshot})
+	t, err := s.d.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return err
 	}

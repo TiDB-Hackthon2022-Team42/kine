@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"database/sql"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 )
@@ -19,6 +20,7 @@ type Backend interface {
 	Delete(ctx context.Context, key string, revision int64) (int64, *KeyValue, bool, error)
 	List(ctx context.Context, prefix, startKey string, limit, revision int64) (int64, []*KeyValue, error)
 	Count(ctx context.Context, prefix string) (int64, int64, error)
+	Set(ctx context.Context, key string, value []byte, lease int64) (int64, *KeyValue, error)
 	Update(ctx context.Context, key string, value []byte, revision, lease int64) (int64, *KeyValue, bool, error)
 	Watch(ctx context.Context, key string, revision int64) <-chan []*Event
 	DbSize(ctx context.Context) (int64, error)
@@ -62,6 +64,16 @@ type KeyValue struct {
 	ModRevision    int64
 	Value          []byte
 	Lease          int64
+}
+
+func (kv *KeyValue) ToEtcdKv() *mvccpb.KeyValue {
+	return &mvccpb.KeyValue{
+		Key:            []byte(kv.Key),
+		CreateRevision: kv.CreateRevision,
+		ModRevision:    kv.ModRevision,
+		Value:          kv.Value,
+		Lease:          kv.Lease,
+	}
 }
 
 type Event struct {
