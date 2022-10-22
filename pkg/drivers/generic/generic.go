@@ -167,6 +167,7 @@ func openAndTest(driverName, dataSourceName string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	logrus.Infof("[%s] datasource: %s", driverName, dataSourceName)
 
 	for i := 0; i < 3; i++ {
 		if err := db.Ping(); err != nil {
