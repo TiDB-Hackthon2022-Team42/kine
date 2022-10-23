@@ -97,9 +97,9 @@ func (k *KVServerBridge) Put(ctx context.Context, r *etcdserverpb.PutRequest) (*
 	if len(r.Key) == 0 {
 		return nil, errors.New("key is blank")
 	}
-	if r.Key[0] != '/' {
-		return nil, errors.New("key is not a path")
-	}
+	//if r.Key[0] != '/' {
+	//	return nil, errors.New("key is not a path")
+	//}
 	revId, preKv, err := k.limited.backend.Set(ctx, string(r.Key), r.Value, r.Lease)
 	if err != nil {
 		return nil, errors.WithStack(err)
